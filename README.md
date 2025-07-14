@@ -24,3 +24,28 @@ Referencias:
 - https://learn.microsoft.com/en-us/archive/msdn-magazine/2017/june/devops-git-internals-for-visual-studio-developers
 - https://github.com/kapumota/DS/blob/main/2025-1/Lectura11.md
 - https://www.atlassian.com/git/tutorials/git-log
+
+## Instalacion del Proyecto
+
+Para instalar o inicializar el proyecto hay que seguir los siguientes pasos
+
+- Clonar repositorio
+
+```bash
+$ git clone https://github.com/Ox-Chema-xO/CC3S2-ES
+$ cd CC3S2-ES
+```
+
+- Crear entorno virtual
+
+```bash
+$ python3 -m venv .venv
+$ source .venv/bin/activate 
+```
+
+- Instalacion de dependencias y hooks
+
+```bash
+$ chmod +x scripts/setup.sh 
+$ ./scripts/setup.sh
+```
