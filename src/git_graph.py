@@ -6,6 +6,7 @@ from collections import defaultdict, deque
 from typing import Dict, List, Set, Tuple
 import heapq
 
+
 class GitDAGAnalyzer:
     def __init__(self, git_dir: str = '.git'):
         self.git_dir = git_dir
@@ -13,7 +14,7 @@ class GitDAGAnalyzer:
         self.commits: Dict[str, dict] = {}
         self.dag: Dict[str, List[str]] = defaultdict(list)
         self.reverse_dag: Dict[str, List[str]] = defaultdict(list)
-        
+
     def read_git_object(self, sha: str) -> Tuple[str, bytes]:
         """lectura y descompresion de objetos git"""
         obj_path = os.path.join(self.objects_dir, sha[:2], sha[2:])
@@ -27,7 +28,7 @@ class GitDAGAnalyzer:
         content = decompressed_data[header_end + 1:]
         obj_type = header.split()[0]
         return obj_type, content
-    
+
     def parse_commit(self, content: bytes) -> dict:
         """parseo a objeto commit y extraer parents"""
         lines = content.decode('utf-8').split('\n')
@@ -86,7 +87,7 @@ class GitDAGAnalyzer:
             except Exception as e:
                 print(f"error procesando commit {sha}: {e}")
                 continue
-    
+
     def get_head_commit(self) -> str:
         """obtener el head del commit"""
         head_path = os.path.join(self.git_dir, 'HEAD')
@@ -115,7 +116,7 @@ class GitDAGAnalyzer:
     def calculate_branch_density(self, head: str) -> float:
         """calculamos la densidad de cada rama"""
         depths = self.calculate_depths(head)
-        #grupo de commits por profundidad de nivel
+        # grupo de commits por profundidad de nivel
         levels = defaultdict(int)
         for commit, depth in depths.items():
             levels[depth] += 1
@@ -124,14 +125,17 @@ class GitDAGAnalyzer:
         density_sum = 0
         total_levels = len(levels)
         for level, count in levels.items():
-            if level > 0: #saltamos nivel cero por que es del head
+            if level > 0:  # saltamos nivel cero por que es del head
                 density_sum += count / level
         return density_sum / total_levels if total_levels > 0 else 0
-    
+
     def get_merge_debt(self, commit: str) -> int:
         """1 si es merge 0 caso contrario"""
-        return 1 if len(self.commits.get(commit, {}).get('parents', [])) > 1 else 0
-    
+        if len(self.commits.get(commit, {}).get('parents', [])) > 1:
+            return 1
+        else:
+            return 0
+
     def find_critical_path(self, head: str) -> List[str]:
         """encontramos ruta critica usando dikjstra pra el merge"""
         root_candidates = []
@@ -169,11 +173,11 @@ class GitDAGAnalyzer:
     def find_bottleneck_commits(self, k: int = 5) -> List[str]:
         """identificamos los commits con mayor indegree (>=2)"""
         indegrees = defaultdict(int)
-        #calculamos indegree para cada commit
+        # calculamos indegree para cada commit
         for commit in self.commits:
             for parent in self.dag.get(commit, []):
                 indegrees[parent] += 1
-        #filtramos commits con indegree >= 2 y los ordenamos por su indegree
+        # filtramos commits con indegree >= 2 y los ordenamos por su indegree
         bottlenecks = [(indegree, commit) for commit, indegree in indegrees.items() if indegree >= 2]
         bottlenecks.sort(reverse=True)
         return [commit for _, commit in bottlenecks[:k]]
@@ -201,22 +205,23 @@ class GitDAGAnalyzer:
                 short_sha = commit[:7]
                 is_merge = len(self.commits[commit]['parents']) > 1
                 color = 'red' if is_merge else 'lightblue'
-                f.write(f'  "{short_sha}" [fillcolor={color}, style=filled];\n')
+                f.write(f' "{short_sha}" [fillcolor={color}, style=filled];\n')
             for commit in self.commits:
                 short_sha = commit[:7]
                 for parent in self.dag.get(commit, []):
                     parent_short = parent[:7]
-                    f.write(f'  "{short_sha}" -> "{parent_short}";\n')   
+                    f.write(f'  "{short_sha}" -> "{parent_short}";\n')
             f.write('}\n')
+
 
 def main():
     analyzer = GitDAGAnalyzer()
     try:
         analysis = analyzer.generate_analysis()
-        #guardamos el analisis en un json
+        # guardamos el analisis en un json
         with open('git_analysis.json', 'w') as f:
             json.dump(analysis, f, indent=2)
-        #generamos dot file
+        # generamos dot file
         analyzer.generate_dot_file()
         print("Analisis completado:")
         print(f"densidad de ramas: {analysis['density']:.4f}")
@@ -224,5 +229,7 @@ def main():
         print(f"bottleneck: {len(analysis['bottlenecks'])}")
     except Exception as e:
         print(f"error durante el analisis: {e}")
+
+
 if __name__ == "__main__":
     main()
