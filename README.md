@@ -18,3 +18,9 @@ son SHA-1 de commits y las aristas apuntas a sus padres.
 
 Al ejecutar este algoritmo `git_graph.py` se genera git_analysis.json con campos { density: float, critical_path:[sha...], bottlenecks: [sha...]}
 y se crea git_graph.dot en formato DOT para visualizar con Graphviz
+
+Referencias:
+- https://www.w3schools.com/dsa/dsa_algo_graphs_dijkstra.php
+- https://learn.microsoft.com/en-us/archive/msdn-magazine/2017/june/devops-git-internals-for-visual-studio-developers
+- https://github.com/kapumota/DS/blob/main/2025-1/Lectura11.md
+- https://www.atlassian.com/git/tutorials/git-log
